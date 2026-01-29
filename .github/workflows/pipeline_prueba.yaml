@@ -135,8 +135,7 @@ jobs:
           tags: |
             type=sha,prefix=sha-
 
-      - name: Compile and Build Docker Image
-        id: docker_build
+      - name: Build info
         run: |
           echo "🐳 ============================================"
           echo "🐳 INICIANDO COMPILACIÓN DE IMAGEN DOCKER"
@@ -149,43 +148,36 @@ jobs:
           echo "  - Registry: Docker Hub"
           echo "  - Imagen: ${{ secrets.DOCKER_USERNAME }}/mi-app-python"
           echo ""
-          
-          # Compilar imagen con tag del commit SHA
-          docker build \
-            --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
-            --build-arg VCS_REF=${{ github.sha }} \
-            --build-arg VERSION=${{ github.run_number }} \
-            --label "org.opencontainers.image.created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
-            --label "org.opencontainers.image.revision=${{ github.sha }}" \
-            --label "org.opencontainers.image.version=${{ github.run_number }}" \
-            --label "org.opencontainers.image.source=https://github.com/${{ github.repository }}" \
-            --tag ${{ secrets.DOCKER_USERNAME }}/mi-app-python:sha-${{ github.sha }} \
-            --file Dockerfile \
-            .
-          
-          echo ""
-          echo "✅ Imagen compilada exitosamente"
-          echo ""
-          
-          # Mostrar información de la imagen
-          echo "📊 Información de la imagen construida:"
-          docker images ${{ secrets.DOCKER_USERNAME }}/mi-app-python --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}"
-          
 
-      - name: Push Image to Docker Hub
+      - name: Build and Push Docker Image
+        id: docker_build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/mi-app-python:sha-${{ github.sha }}
+          build-args: |
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VCS_REF=${{ github.sha }}
+            VERSION=${{ github.run_number }}
+          labels: |
+            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ github.run_number }}
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build summary
         run: |
+          echo ""
+          echo "✅ Imagen compilada y subida exitosamente"
           echo "📤 ============================================"
-          echo "📤 SUBIENDO IMAGEN A DOCKER HUB"
+          echo "📤 IMAGEN SUBIDA A DOCKER HUB"
           echo "📤 ============================================"
           echo ""
           echo "🏷️  Tag: sha-${{ github.sha }}"
-          echo ""
-          
-          # Subir imagen con tag del commit SHA
-          docker push ${{ secrets.DOCKER_USERNAME }}/mi-app-python:sha-${{ github.sha }}
-          
-          echo ""
-          echo "✅ Imagen subida exitosamente a Docker Hub"
           echo "🔗 URL: https://hub.docker.com/r/${{ secrets.DOCKER_USERNAME }}/mi-app-python"
           echo ""
           echo "📋 Para descargar la imagen:"
