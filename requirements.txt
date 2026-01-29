@@ -1,0 +1,12 @@
+# Dependencias de producción
+# Este script usa solo módulos de la biblioteca estándar de Python
+
+# Dependencias de desarrollo y testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+coverage>=7.3.0
+pylint>=3.0.0
+flake8>=6.1.0
+black>=23.7.0
+bandit>=1.7.5
+safety>=2.3.5

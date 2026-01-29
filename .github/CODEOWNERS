@@ -1,0 +1,17 @@
+# CODEOWNERS - Define quién debe aprobar cambios en el código
+# 
+# Cada línea es un patrón de archivo seguido de uno o más propietarios.
+# Los propietarios pueden ser usuarios (@username) o equipos (@org/team-name)
+#
+# Documentación: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Propietario por defecto de todo el repositorio
+* @luischacon74
+
+# Archivos específicos
+*.py @luischacon74
+Dockerfile @luischacon74
+requirements.txt @luischacon74
+
+# Workflows de GitHub Actions
+.github/workflows/* @luischacon74
