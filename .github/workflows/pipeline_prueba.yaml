@@ -81,7 +81,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: Archive coverage HTML report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: coverage-report
@@ -95,7 +95,7 @@ jobs:
           bandit -r . --exit-zero
 
       - name: Upload Bandit report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: bandit-security-report
@@ -109,7 +109,7 @@ jobs:
           safety check --continue-on-error || true
 
       - name: Upload Safety report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: safety-dependency-report
@@ -244,7 +244,7 @@ jobs:
           ls -lh mi-app-python-${{ github.sha }}.tar.gz
 
       - name: Upload Docker Image Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docker-image-${{ github.run_number }}
           path: mi-app-python-${{ github.sha }}.tar.gz
