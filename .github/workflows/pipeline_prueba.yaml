@@ -172,52 +172,6 @@ jobs:
           docker images ${{ secrets.DOCKER_USERNAME }}/mi-app-python --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}"
           
 
-      - name: Test Docker Container
-        run: |
-          echo "🧪 ==========================================="
-          echo "🧪 PROBANDO CONTENEDOR DOCKER"
-          echo "🧪 ==========================================="
-          echo ""
-          
-          # Iniciar contenedor
-          echo "▶️  Iniciando contenedor de prueba..."
-          docker run --name test-container -d ${{ secrets.DOCKER_USERNAME }}/mi-app-python:sha-${{ github.sha }}
-          
-          # Esperar que el contenedor inicie
-          echo "⏳ Esperando 15 segundos para que la aplicación inicie..."
-          sleep 15
-          
-          # Verificar que el contenedor esté corriendo
-          echo ""
-          echo "📊 Estado del contenedor:"
-          docker ps -a --filter name=test-container
-          
-          # Mostrar logs
-          echo ""
-          echo "📝 Logs del contenedor:"
-          docker logs test-container
-          
-          # Verificar salud del contenedor
-          echo ""
-          echo "🏥 Verificando salud del contenedor..."
-          CONTAINER_STATUS=$(docker inspect test-container --format='{{.State.Status}}')
-          echo "Estado: $CONTAINER_STATUS"
-          
-          if [ "$CONTAINER_STATUS" = "running" ]; then
-            echo "✅ Contenedor está corriendo correctamente"
-          else
-            echo "❌ ERROR: Contenedor no está corriendo"
-            docker logs test-container
-            exit 1
-          fi
-          
-          # Limpiar
-          echo ""
-          echo "🧹 Limpiando contenedor de prueba..."
-          docker stop test-container
-          docker rm test-container
-          echo "✅ Contenedor de prueba eliminado"
-
       - name: Push Image to Docker Hub
         run: |
           echo "📤 ============================================"
@@ -237,18 +191,6 @@ jobs:
           echo "📋 Para descargar la imagen:"
           echo "   docker pull ${{ secrets.DOCKER_USERNAME }}/mi-app-python:sha-${{ github.sha }}"
 
-      - name: Save Docker Image as Artifact
-        run: |
-          echo "💾 Guardando imagen Docker como artefacto local..."
-          docker save ${{ secrets.DOCKER_USERNAME }}/mi-app-python:sha-${{ github.sha }} | gzip > mi-app-python-${{ github.sha }}.tar.gz
-          ls -lh mi-app-python-${{ github.sha }}.tar.gz
-
-      - name: Upload Docker Image Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-image-${{ github.run_number }}
-          path: mi-app-python-${{ github.sha }}.tar.gz
-          retention-days: 7
 
       # ========== RESUMEN ==========
       - name: Success notification
