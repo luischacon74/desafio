@@ -213,7 +213,7 @@ jobs:
           else
             git add app-prueba/deployment.yaml
             git commit -m "Update image to sha-${{ github.sha }}"
-            git push https://${{ secrets.GITHUB_TOKEN }}@github.com/luischacon74/deploy-prueba.git main
+            git push https://${{ secrets.PAT_TOKEN }}@github.com/luischacon74/deploy-prueba.git main
             echo "✅ Deployment actualizado correctamente"
           fi
 
