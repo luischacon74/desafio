@@ -21,6 +21,9 @@ jobs:
   test-and-build:
     runs-on: ubuntu-latest
     
+    permissions:
+      contents: write  # Permiso para hacer push a otros repos
+    
     # Solo ejecutar en push o si el PR está aprobado
     if: |
       github.event_name == 'push' ||
