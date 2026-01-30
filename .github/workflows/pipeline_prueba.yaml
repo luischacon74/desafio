@@ -65,7 +65,20 @@ jobs:
           echo "🔍 Ejecutando análisis estático con Pylint..."
           pylint app.py --exit-zero
 
-      # ========== PRUEBAS UNITARIAS CON COVERAGE ==========
+      - name: Security analysis with Bandit
+        run: |
+          echo "🔒 Ejecutando análisis estático de seguridad..."
+          bandit -r . -f json -o bandit-report.json --exit-zero || true
+          bandit -r . --exit-zero
+
+      - name: Upload Bandit report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit-security-report
+          path: bandit-report.json
+
+      # ========== PRUEBAS UNITARIAS CON COVERAGE y ANALISIS DINAMICO CIN PYTEST==========
       - name: Run Unit Tests with Coverage
         run: |
           echo "🧪 Ejecutando pruebas unitarias con coverage del 80%..."
@@ -87,19 +100,8 @@ jobs:
           name: coverage-report
           path: htmlcov/
 
-      # ========== ANÁLISIS DINÁMICO DE SEGURIDAD ==========
-      - name: Security analysis with Bandit
-        run: |
-          echo "🔒 Ejecutando análisis dinámico de seguridad..."
-          bandit -r . -f json -o bandit-report.json --exit-zero || true
-          bandit -r . --exit-zero
 
-      - name: Upload Bandit report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: bandit-security-report
-          path: bandit-report.json
+
 
       # ========== ANÁLISIS DE COMPOSICIÓN ==========
       - name: Dependency vulnerability check with Safety
@@ -183,6 +185,34 @@ jobs:
           echo "📋 Para descargar la imagen:"
           echo "   docker pull ${{ secrets.DOCKER_USERNAME }}/mi-app-python:sha-${{ github.sha }}"
 
+      # ========== ACTUALIZAR DEPLOYMENT EN REPO GITOPS ==========
+      - name: Update deployment manifest
+        run: |
+          echo "🔄 Actualizando deployment.yaml en repo GitOps..."
+          
+          # Configurar Git
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          
+          # Clonar repo de deployments
+          git clone https://github.com/luischacon74/deploy-prueba.git /tmp/deploy-prueba
+          cd /tmp/deploy-prueba
+          
+          # Actualizar la imagen en deployment.yaml
+          sed -i "s|image:.*mi-app-python.*|image: ${{ secrets.DOCKER_USERNAME }}/mi-app-python:sha-${{ github.sha }}|g" app-prueba/deployment.yaml
+          
+          # Verificar cambios
+          git diff app-prueba/deployment.yaml
+          
+          # Commit y push si hay cambios
+          if git diff --quiet; then
+            echo "No hay cambios en el deployment"
+          else
+            git add app-prueba/deployment.yaml
+            git commit -m "Update image to sha-${{ github.sha }}"
+            git push https://${{ secrets.GITHUB_TOKEN }}@github.com/luischacon74/deploy-prueba.git main
+            echo "✅ Deployment actualizado correctamente"
+          fi
 
       # ========== RESUMEN ==========
       - name: Success notification
